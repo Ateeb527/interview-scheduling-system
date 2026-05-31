@@ -1,0 +1,14 @@
+{
+  "name": "interview-scheduling-system",
+  "version": "1.0.0",
+  "description": "Backend service for managing interview scheduling",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node --experimental-sqlite src/app.js",
+    "test": "node --experimental-sqlite tests/run-tests.js",
+    "serve": "node src/app.js"
+  
+    
+  },
+  "engines": { "node": ">=22" }
+}

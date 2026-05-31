@@ -1,0 +1,168 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Interview Scheduling System",
+    "version": "1.0.0",
+    "description": "API for managing interview scheduling between candidates and interviewers."
+  },
+  "servers": [{ "url": "http://localhost:3000" }],
+  "paths": {
+    "/interviewers": {
+      "post": {
+        "summary": "Create an interviewer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateInterviewer" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Interviewer created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Interviewer" } } }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "409": { "description": "Duplicate email" }
+        }
+      },
+      "get": {
+        "summary": "Get all interviewers",
+        "responses": {
+          "200": {
+            "description": "List of interviewers",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Interviewer" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interviews": {
+      "post": {
+        "summary": "Schedule an interview",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ScheduleInterview" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Interview scheduled successfully" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "404": { "description": "Interviewer not found" },
+          "409": { "description": "Scheduling conflict" }
+        }
+      },
+      "get": {
+        "summary": "Get all interviews",
+        "responses": {
+          "200": {
+            "description": "List of interviews",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Interview" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interviews/{id}/status": {
+      "patch": {
+        "summary": "Update interview status",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateStatus" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Status updated successfully" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "404": { "description": "Interview not found" },
+          "422": { "description": "Invalid status transition" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Interviewer": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" }
+        }
+      },
+      "CreateInterviewer": {
+        "type": "object",
+        "required": ["name", "email"],
+        "properties": {
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" }
+        }
+      },
+      "Interview": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "candidateName": { "type": "string" },
+          "interviewerId": { "type": "integer" },
+          "startTime": { "type": "string", "format": "date-time" },
+          "endTime": { "type": "string", "format": "date-time" },
+          "status": { "type": "string", "enum": ["SCHEDULED", "CONFIRMED", "COMPLETED", "CANCELLED"] }
+        }
+      },
+      "ScheduleInterview": {
+        "type": "object",
+        "required": ["candidateName", "interviewerId", "startTime", "endTime"],
+        "properties": {
+          "candidateName": { "type": "string" },
+          "interviewerId": { "type": "integer" },
+          "startTime": { "type": "string", "format": "date-time" },
+          "endTime": { "type": "string", "format": "date-time" }
+        }
+      },
+      "UpdateStatus": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "type": "string", "enum": ["SCHEDULED", "CONFIRMED", "COMPLETED", "CANCELLED"] }
+        }
+      }
+    },
+    "responses": {
+      "ValidationError": {
+        "description": "Validation error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
