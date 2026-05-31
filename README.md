@@ -11,22 +11,18 @@ A backend service for managing interview scheduling between candidates and inter
 ```
 interview-scheduling-system/
 ├── src/
-│   ├── router.js             # Route dispatch
-│   ├── app.js                # HTTP server entry point
-│   ├── env.js                # .env loader
-│   ├── controllers/          # (logic inlined in router for simplicity)
-│   ├── services/
-│   │   ├── interviewerService.js
-│   │   └── interviewService.js
-│   ├── validators/
-│   │   └── schemas.js
-│   └── database/
-│       └── db.js
-├── tests/
-│   └── run-tests.js          # Zero-dependency test suite
-├── swagger.json              # OpenAPI 3.0 spec
-├── .env
-└── package.json
+│   ├── controllers/    # Request handlers
+│   ├── services/       # Business logic
+│   ├── routes/         # API routes
+│   ├── validators/     # Request validation
+│   ├── middleware/     # Error handling & validation middleware
+│   ├── database/       # Database setup
+│   ├── app.js          # Application bootstrap
+│   └── router.js       # Route registration
+├── tests/              # Unit & integration tests
+├── swagger.json        # OpenAPI specification
+├── package.json
+└── README.md
 ```
 
 ## Run
