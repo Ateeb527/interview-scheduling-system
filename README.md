@@ -78,3 +78,4 @@ CONFIRMED → CANCELLED
 | `INTERVIEW_CONFLICT` | 409 | Overlapping interview for same interviewer |
 | `NOT_FOUND` | 404 | Interviewer or interview not found |
 | `INVALID_STATUS_TRANSITION` | 422 | Illegal status change |
+![](https://komarev.com/ghpvc/?username=Ateeb527)
