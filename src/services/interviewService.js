@@ -21,39 +21,86 @@ const {
  */
 function hasConflict(interviewerId, startTime, endTime, excludeId = null) {
   const db = getDb();
+
   let sql = `
-    SELECT id FROM interviews
-    WHERE interviewerId = ?
-      AND status NOT IN ('CANCELLED')
-      AND startTime < ?
-      AND endTime   > ?
+    SELECT i.id
+    FROM interviews i
+    JOIN interview_interviewers ii
+      ON ii.interviewId = i.id
+    WHERE ii.interviewerId = ?
+      AND i.status NOT IN ('CANCELLED')
+      AND i.startTime < ?
+      AND i.endTime > ?
   `;
+
   const params = [interviewerId, endTime, startTime];
 
   if (excludeId !== null) {
-    sql += ' AND id != ?';
+    sql += ' AND i.id != ?';
     params.push(excludeId);
   }
 
   return !!db.prepare(sql).get(...params);
 }
 
-function scheduleInterview({ candidateName, interviewerId, startTime, endTime }) {
+function scheduleInterview({ candidateName, interviewerIds, startTime, endTime }) {
   // Validator already trimmed candidateName — store it clean
-  if (!getInterviewerById(interviewerId))
-    throw new NotFoundError(`Interviewer with id ${interviewerId} not found.`);
+  for (const interviewerId of interviewerIds) {
+  if (!getInterviewerById(interviewerId)) {
+   throw new NotFoundError(
+  `Interviewer with id ${interviewerId} not found.`
+);
+  }
+}
 
-  if (hasConflict(interviewerId, startTime, endTime))
+ for (const interviewerId of interviewerIds) {
+  if (hasConflict(interviewerId, startTime, endTime)) {
     throw new InterviewConflictError();
+  }
+}
+ const result = getDb().prepare(`
+  INSERT INTO interviews
+  (candidateName, startTime, endTime, status)
+  VALUES (?, ?, ?, 'SCHEDULED')
+`).run(
+  candidateName,
+  startTime,
+  endTime
+);
 
-  getDb().prepare(`
-    INSERT INTO interviews (candidateName, interviewerId, startTime, endTime, status)
-    VALUES (?, ?, ?, ?, 'SCHEDULED')
-  `).run(candidateName, interviewerId, startTime, endTime);
+const interviewId = result.lastInsertRowid;
+
+const stmt = getDb().prepare(`
+  INSERT INTO interview_interviewers
+  (interviewId, interviewerId)
+  VALUES (?, ?)
+`);
+
+for (const interviewerId of interviewerIds) {
+  stmt.run(interviewId, interviewerId);
+}
 }
 
 function getAllInterviews() {
-  return getDb().prepare('SELECT * FROM interviews').all();
+  const interviews = getDb()
+    .prepare('SELECT * FROM interviews')
+    .all();
+
+  return interviews.map(interview => {
+    const interviewerIds = getDb()
+      .prepare(`
+        SELECT interviewerId
+        FROM interview_interviewers
+        WHERE interviewId = ?
+      `)
+      .all(interview.id)
+      .map(row => row.interviewerId);
+
+    return {
+      ...interview,
+      interviewerIds
+    };
+  });
 }
 
 function getInterviewById(id) {

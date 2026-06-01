@@ -119,7 +119,7 @@
         "properties": {
           "id": { "type": "integer" },
           "candidateName": { "type": "string" },
-          "interviewerId": { "type": "integer" },
+          "interviewerId": { "type": "array", "items": { "type": "integer" } },
           "startTime": { "type": "string", "format": "date-time" },
           "endTime": { "type": "string", "format": "date-time" },
           "status": { "type": "string", "enum": ["SCHEDULED", "CONFIRMED", "COMPLETED", "CANCELLED"] }
@@ -127,10 +127,16 @@
       },
       "ScheduleInterview": {
         "type": "object",
-        "required": ["candidateName", "interviewerId", "startTime", "endTime"],
+        "required": ["candidateName", "interviewerIds", "startTime", "endTime"],
         "properties": {
           "candidateName": { "type": "string" },
-          "interviewerId": { "type": "integer" },
+           "interviewerIds": {
+  "type": "array",
+  "minItems": 2,
+  "items": {
+    "type": "integer"
+  }
+},
           "startTime": { "type": "string", "format": "date-time" },
           "endTime": { "type": "string", "format": "date-time" }
         }

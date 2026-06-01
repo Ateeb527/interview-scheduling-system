@@ -27,15 +27,25 @@ function validateScheduleInterview(body) {
     ? body.candidateName.trim() : null;
 
   // Fix #5: explicitly reject non-integer interviewerId (e.g. string "1")
-  const interviewerId = body.interviewerId;
+  const interviewerIds = body.interviewerIds;
   const startTime = body.startTime;
   const endTime = body.endTime;
 
   if (!candidateName)
     return { error: { field: 'candidateName', message: 'candidateName is required' } };
 
-  if (!Number.isInteger(interviewerId) || interviewerId <= 0)
-    return { error: { field: 'interviewerId', message: 'interviewerId must be a positive integer' } };
+ if (
+  !Array.isArray(interviewerIds) ||
+  interviewerIds.length < 2 ||
+  interviewerIds.some(id => !Number.isInteger(id) || id <= 0)
+) {
+  return {
+    error: {
+      field: 'interviewerIds',
+      message: 'interviewerIds must contain at least 2 positive integers'
+    }
+  };
+}
 
   if (!startTime || typeof startTime !== 'string' || isNaN(Date.parse(startTime)))
     return { error: { field: 'startTime', message: 'startTime must be a valid ISO 8601 datetime' } };
@@ -47,7 +57,14 @@ function validateScheduleInterview(body) {
   if (new Date(endTime) <= new Date(startTime))
     return { error: { field: 'endTime', message: 'endTime must be strictly after startTime' } };
 
-  return { data: { candidateName, interviewerId, startTime, endTime } };
+  return {
+  data: {
+    candidateName,
+    interviewerIds,
+    startTime,
+    endTime
+  }
+};
 }
 
 function validateUpdateStatus(body) {

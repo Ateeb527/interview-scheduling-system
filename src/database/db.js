@@ -33,14 +33,27 @@ function initSchema(database) {
     CREATE TABLE IF NOT EXISTS interviews (
       id            INTEGER PRIMARY KEY AUTOINCREMENT,
       candidateName TEXT NOT NULL CHECK(length(trim(candidateName)) > 0),
-      interviewerId INTEGER NOT NULL,
+     
       startTime     TEXT NOT NULL,
       endTime       TEXT NOT NULL,
       status        TEXT NOT NULL DEFAULT 'SCHEDULED'
                          CHECK(status IN ('SCHEDULED','CONFIRMED','COMPLETED','CANCELLED')),
-      CHECK(endTime > startTime),
-      FOREIGN KEY (interviewerId) REFERENCES interviewers(id)
+      CHECK(endTime > startTime)
+      
     );
+    CREATE TABLE IF NOT EXISTS interview_interviewers (
+  interviewId INTEGER NOT NULL,
+  interviewerId INTEGER NOT NULL,
+
+  PRIMARY KEY (interviewId, interviewerId),
+
+  FOREIGN KEY (interviewId)
+    REFERENCES interviews(id)
+    ON DELETE CASCADE,
+
+  FOREIGN KEY (interviewerId)
+    REFERENCES interviewers(id)
+);
   `);
 }
 
